@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main  # Automatically triggers on push to the main branch
-
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  
 jobs:
 
   register-dataset:
