@@ -3,84 +3,46 @@ name: Engine Project pipeline
 on:
   push:
     branches:
-      - main
-
-# 🔐 Minimum required permissions (best practice)
-permissions:
-  contents: read
-
-# 🚀 Prevent multiple runs on same branch (from your file concept)
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-# 🔥 Node 24 compatibility
+      - main  # Automatically triggers on push to the main branch
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
 
   register-dataset:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: pip install -r Engine_project/requirements.txt
-
       - name: Upload Dataset to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python Engine_project/model_building/data_register.py
 
-
   data-prep:
     needs: register-dataset
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: pip install -r Engine_project/requirements.txt
-
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python Engine_project/model_building/prep.py
 
 
-  model-training:
+  model-traning:
     needs: data-prep
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: pip install -r Engine_project/requirements.txt
-
       - name: Start MLflow Server
         run: |
-          nohup mlflow ui --host 0.0.0.0 --port 5000 &
-          sleep 5
-
+          nohup mlflow ui --host 0.0.0.0 --port 5000 &  # Run MLflow UI in the background
+          sleep 5  # Wait for a moment to let the server starts
       - name: Model Building
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -88,25 +50,13 @@ jobs:
 
 
   deploy-hosting:
-    needs: [model-training, data-prep, register-dataset]
     runs-on: ubuntu-latest
-
-    # ✅ Run even if previous fails (optional advanced control)
-    if: ${{ success() }}
-
+    needs: [model-traning,data-prep,register-dataset]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: pip install -r Engine_project/requirements.txt
-
-      - name: Push files to Hugging Face Space
+      - name: Push files to Frontend Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python Engine_project/hosting/hosting.py
