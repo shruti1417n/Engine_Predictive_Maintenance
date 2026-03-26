@@ -1,4 +1,3 @@
-%%writefile Engine_project/model_building/train.py
 # for data manipulation
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
