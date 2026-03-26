@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import make_column_transformer
 # for model training, tuning, and evaluation
 import xgboost as xgb
+from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report, recall_score
 # for model serialization
