@@ -1,11 +1,8 @@
+%%writefile Engine_project/model_building/train.py
 # for data manipulation
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import make_column_transformer
-# for imbalanced learning pipelines
-from imblearn.pipeline import Pipeline as ImbPipeline
-# from imblearn.over_sampling import SMOTE # Removed as per user request
-# from imblearn.under_sampling import RandomUnderSampler # Removed as per user request to focus on oversampling
 # for model training, tuning, and evaluation
 import xgboost as xgb
 from sklearn.model_selection import GridSearchCV
@@ -56,7 +53,7 @@ preprocessor = make_column_transformer(
     (StandardScaler(), numeric_features)
 )
 
-# Define base XGBoost model 
+# Define base XGBoost model
 xgb_model = xgb.XGBClassifier(scale_pos_weight=class_weight, random_state=42)
 
 # Define hyperparameter grid - Expanded for better performance
@@ -70,11 +67,8 @@ param_grid = {
     'xgbclassifier__subsample': [0.6, 0.8, 1.0]
 }
 
-# Model pipeline with preprocessing step
-model_pipeline = ImbPipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('xgbclassifier', xgb_model)
-])
+# Model pipeline
+model_pipeline = make_pipeline(preprocessor, xgb_model)
 
 with mlflow.start_run():
     # Hyperparameter tuning
